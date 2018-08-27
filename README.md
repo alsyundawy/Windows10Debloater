@@ -10,7 +10,7 @@ This comes in hand when setting up new Windows 10 machines without needing to ma
 
 # How To Run
 
-Warning: This MUST be run before creating new profiles, otherwise you will find that there will be empty tiles in your start menu or that the bloatware wasn't completely removed. Results are varied, and some can run it just fine with great results on their existing account, and others have an issue with the bloatware remaining.
+
 
 Download the Windows10Debloater.ps1 file. Next, open PowerShell ISE/VSCode as an Administrator, copy the source code from Windows10Debloater.ps1 and throw it into PowerShell ISE/VSCode/etc and run it.
 
@@ -148,6 +148,6 @@ Thank you to a60wattfish, abulgatz and Reddit user /u/GavinEke for some of the s
 
 # Donate 
 
-If you like and appreciate my work then consider a donation for a cup of tea.
+If you like and appreciate my work then please consider a donation for a cup of coffee. :)
 
 [![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/syncrn)
