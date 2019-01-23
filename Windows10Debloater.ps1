@@ -4,55 +4,74 @@
 #no errors throughout
 $ErrorActionPreference = 'silentlycontinue'
 
-If (Test-Path "C:\Windows10Debloater") {
-    Write-Output "C:\Windows10Debloater exists. Skipping."
+$DebloatFolder = "C:\Temp\Windows10Debloater"
+If (Test-Path $DebloatFolder) {
+    Write-Output "$DebloatFolder exists. Skipping."
 }
 Else {
-    Write-Output "The folder 'C:\Windows10Debloater' doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
+    Write-Output "The folder "$DebloatFolder" doesn't exist. This folder will be used for storing logs created after the script runs. Creating now."
     Start-Sleep 1
-    New-Item -Path "C:\Windows10Debloater" -ItemType Directory
+    New-Item -Path "$DebloatFolder" -ItemType Directory
+    Write-Output "The folder $DebloatFolder was successfully created."
 }
 
-Start-Transcript -OutputDirectory "C:\Windows10Debloater"
+Start-Transcript -OutputDirectory "$DebloatFolder"
 
-Add-Type -AssemblyName PresentationCore,PresentationFramework
+Add-Type -AssemblyName PresentationCore, PresentationFramework
 
-Function Start-Debloat {
+Function DebloatAll {
     
     [CmdletBinding()]
         
     Param()
     
-    $AppXApps = @(
+    #Removes AppxPackages
+    #Credit to /u/GavinEke for a modified version of my whitelist code
+    [regex]$WhitelistedApps = 'Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET'
+    Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
+    Get-AppxPackage | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
+    Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -NotMatch $WhitelistedApps} | Remove-AppxProvisionedPackage -Online
+}
+
+Function DebloatBlacklist {
+    [CmdletBinding()]
+
+    Param ()
+
+    $Bloatware = @(
 
         #Unnecessary Windows 10 AppX Apps
-        "*Microsoft.BingNews*"
-        "*Microsoft.GetHelp*"
-        "*Microsoft.Getstarted*"
-        "*Microsoft.Messaging*"
-        "*Microsoft.Microsoft3DViewer*"
-        "*Microsoft.MicrosoftOfficeHub*"
-        "*Microsoft.MicrosoftSolitaireCollection*"
-        "*Microsoft.NetworkSpeedTest*"
-        "*Microsoft.Office.Sway*"
-        "*Microsoft.OneConnect*"
-        "*Microsoft.People*"
-        "*Microsoft.Print3D*"
-        "*Microsoft.SkypeApp*"
-        "*Microsoft.WindowsAlarms*"
-        "*Microsoft.WindowsCamera*"
-        "*microsoft.windowscommunicationsapps*"
-        "*Microsoft.WindowsFeedbackHub*"
-        "*Microsoft.WindowsMaps*"
-        "*Microsoft.WindowsSoundRecorder*"
-        "*Microsoft.Xbox.TCUI*"
-        "*Microsoft.XboxApp*"
-        "*Microsoft.XboxGameOverlay*"
-        "*Microsoft.XboxIdentityProvider*"
-        "*Microsoft.XboxSpeechToTextOverlay*"
-        "*Microsoft.ZuneMusic*"
-        "*Microsoft.ZuneVideo*"
-
+        "Microsoft.BingNews"
+        "Microsoft.DesktopAppInstaller"
+        "Microsoft.GetHelp"
+        "Microsoft.Getstarted"
+        "Microsoft.Messaging"
+        "Microsoft.Microsoft3DViewer"
+        "Microsoft.MicrosoftOfficeHub"
+        "Microsoft.MicrosoftSolitaireCollection"
+        "Microsoft.NetworkSpeedTest"
+        "Microsoft.Office.OneNote"
+        "Microsoft.Office.Sway"
+        "Microsoft.OneConnect"
+        "Microsoft.People"
+        "Microsoft.Print3D"
+        "Microsoft.RemoteDesktop"
+        "Microsoft.SkypeApp"
+        "Microsoft.StorePurchaseApp"
+        "Microsoft.WindowsAlarms"
+        #"Microsoft.WindowsCamera"
+        "microsoft.windowscommunicationsapps"
+        "Microsoft.WindowsFeedbackHub"
+        "Microsoft.WindowsMaps"
+        "Microsoft.WindowsSoundRecorder"
+        "Microsoft.Xbox.TCUI"
+        "Microsoft.XboxApp"
+        "Microsoft.XboxGameOverlay"
+        "Microsoft.XboxIdentityProvider"
+        "Microsoft.XboxSpeechToTextOverlay"
+        "Microsoft.ZuneMusic"
+        "Microsoft.ZuneVideo"
+             
         #Sponsored Windows 10 AppX Apps
         #Add sponsored/featured apps to remove in the "*AppName*" format
         "*EclipseManager*"
@@ -66,7 +85,9 @@ Function Start-Debloat {
         "*Twitter*"
         "*Facebook*"
         "*Spotify*"
-
+        "*Minecraft*"
+        "*Royal Revolt*"
+             
         #Optional: Typically not removed but you can if you need to for some reason
         #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
         #"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
@@ -77,19 +98,11 @@ Function Start-Debloat {
         #"*Microsoft.WindowsCalculator*"
         #"*Microsoft.WindowsStore*"
     )
-    foreach ($App in $AppXApps) {
-        Write-Verbose -Message ('Removing Package {0}' -f $App)
-        Get-AppxPackage -Name $App | Remove-AppxPackage -ErrorAction SilentlyContinue
-        Get-AppxPackage -Name $App -AllUsers | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
-        Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $App | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+    foreach ($Bloat in $Bloatware) {
+        Get-AppxPackage -Name $Bloat| Remove-AppxPackage -ErrorAction SilentlyContinue
+        Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Debloat | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+        Write-Output "Trying to remove $Bloat."
     }
-    
-    #Removes AppxPackages
-    #Credit to /u/GavinEke for a modified version of my whitelist code
-    [regex]$WhitelistedApps = 'Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint*'
-    Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
-    Get-AppxPackage | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
-    Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -NotMatch $WhitelistedApps} | Remove-AppxProvisionedPackage -Online
 }
 
 Function Remove-Keys {
@@ -164,10 +177,10 @@ Function Protect-Privacy {
     Write-Output "Disabling Bing Search in Start Menu"
     $WebSearch = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
     Set-ItemProperty "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Search" BingSearchEnabled -Value 0 
-	If (!(Test-Path $WebSearch)) {
+    If (!(Test-Path $WebSearch)) {
         New-Item $WebSearch
-	}
-	Set-ItemProperty $WebSearch DisableWebSearch -Value 1 
+    }
+    Set-ItemProperty $WebSearch DisableWebSearch -Value 1 
             
     #Stops the Windows Feedback Experience from sending anonymous data
     Write-Output "Stopping the Windows Feedback Experience program"
@@ -189,12 +202,12 @@ Function Protect-Privacy {
     If (!(Test-Path $registryOEM)) {
         New-Item $registryOEM
     }
-        Set-ItemProperty $registryOEM  ContentDeliveryAllowed -Value 0 
-        Set-ItemProperty $registryOEM  OemPreInstalledAppsEnabled -Value 0 
-        Set-ItemProperty $registryOEM  PreInstalledAppsEnabled -Value 0 
-        Set-ItemProperty $registryOEM  PreInstalledAppsEverEnabled -Value 0 
-        Set-ItemProperty $registryOEM  SilentInstalledAppsEnabled -Value 0 
-        Set-ItemProperty $registryOEM  SystemPaneSuggestionsEnabled -Value 0          
+    Set-ItemProperty $registryOEM  ContentDeliveryAllowed -Value 0 
+    Set-ItemProperty $registryOEM  OemPreInstalledAppsEnabled -Value 0 
+    Set-ItemProperty $registryOEM  PreInstalledAppsEnabled -Value 0 
+    Set-ItemProperty $registryOEM  PreInstalledAppsEverEnabled -Value 0 
+    Set-ItemProperty $registryOEM  SilentInstalledAppsEnabled -Value 0 
+    Set-ItemProperty $registryOEM  SystemPaneSuggestionsEnabled -Value 0          
     
     #Preping mixed Reality Portal for removal    
     Write-Output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
@@ -209,14 +222,14 @@ Function Protect-Privacy {
     $WifiSense2 = "HKLM:\SOFTWARE\Microsoft\PolicyManager\default\WiFi\AllowAutoConnectToWiFiSenseHotspots"
     $WifiSense3 = "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config"
     If (!(Test-Path $WifiSense1)) {
-	    New-Item $WifiSense1
+        New-Item $WifiSense1
     }
     Set-ItemProperty $WifiSense1  Value -Value 0 
-	If (!(Test-Path $WifiSense2)) {
-	    New-Item $WifiSense2
+    If (!(Test-Path $WifiSense2)) {
+        New-Item $WifiSense2
     }
     Set-ItemProperty $WifiSense2  Value -Value 0 
-	Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0 
+    Set-ItemProperty $WifiSense3  AutoConnectAllowedOEM -Value 0 
         
     #Disables live tiles
     Write-Output "Disabling live tiles"
@@ -271,56 +284,60 @@ Function Protect-Privacy {
     Get-ScheduledTask  DmClient | Disable-ScheduledTask
     Get-ScheduledTask  DmClientOnScenarioDownload | Disable-ScheduledTask
 
-    Write-Output "Stopping and disabling WAP Push Service"
-    #Stop and disable WAP Push Service
-	Stop-Service "dmwappushservice"
-	Set-Service "dmwappushservice" -StartupType Disabled
-
     Write-Output "Stopping and disabling Diagnostics Tracking Service"
     #Disabling the Diagnostics Tracking Service
-	Stop-Service "DiagTrack"
-	Set-Service "DiagTrack" -StartupType Disabled
+    Stop-Service "DiagTrack"
+    Set-Service "DiagTrack" -StartupType Disabled
+
+    
+     Write-Output "Removing CloudStore from registry if it exists"
+     $CloudStore = 'HKCUSoftware\Microsoft\Windows\CurrentVersion\CloudStore'
+     If (Test-Path $CloudStore) {
+     Stop-Process Explorer.exe -Force
+     Remove-Item $CloudStore
+     Start-Process Explorer.exe -Wait
+   }
 }
 
 Function DisableCortana {
-	Write-Host "Disabling Cortana"
+    Write-Host "Disabling Cortana"
     $Cortana1 = "HKCU:\SOFTWARE\Microsoft\Personalization\Settings"
     $Cortana2 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization"
     $Cortana3 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
-	If (!(Test-Path $Cortana1)) {
-		New-Item $Cortana1
-	}
-	Set-ItemProperty $Cortana1 AcceptedPrivacyPolicy -Value 0 
-	If (!(Test-Path $Cortana2)) {
-		New-Item $Cortana2
-	}
-	Set-ItemProperty $Cortana2 RestrictImplicitTextCollection -Value 1 
-	Set-ItemProperty $Cortana2 RestrictImplicitInkCollection -Value 1 
-	If (!(Test-Path $Cortana3)) {
-		New-Item $Cortana3
-	}
+    If (!(Test-Path $Cortana1)) {
+        New-Item $Cortana1
+    }
+    Set-ItemProperty $Cortana1 AcceptedPrivacyPolicy -Value 0 
+    If (!(Test-Path $Cortana2)) {
+        New-Item $Cortana2
+    }
+    Set-ItemProperty $Cortana2 RestrictImplicitTextCollection -Value 1 
+    Set-ItemProperty $Cortana2 RestrictImplicitInkCollection -Value 1 
+    If (!(Test-Path $Cortana3)) {
+        New-Item $Cortana3
+    }
     Set-ItemProperty $Cortana3 HarvestContacts -Value 0
     
 }
 
 Function EnableCortana {
-	Write-Host "Re-enabling Cortana"
+    Write-Host "Re-enabling Cortana"
     $Cortana1 = "HKCU:\SOFTWARE\Microsoft\Personalization\Settings"
     $Cortana2 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization"
     $Cortana3 = "HKCU:\SOFTWARE\Microsoft\InputPersonalization\TrainedDataStore"
-	If (!(Test-Path $Cortana1)) {
-		New-Item $Cortana1
-	}
-	Set-ItemProperty $Cortana1 AcceptedPrivacyPolicy -Value 1 
-	If (!(Test-Path $Cortana2)) {
-		New-Item $Cortana2
-	}
-	Set-ItemProperty $Cortana2 RestrictImplicitTextCollection -Value 0 
-	Set-ItemProperty $Cortana2 RestrictImplicitInkCollection -Value 0 
-	If (!(Test-Path $Cortana3)) {
-		New-Item $Cortana3
-	}
-	Set-ItemProperty $Cortana3 HarvestContacts -Value 1 
+    If (!(Test-Path $Cortana1)) {
+        New-Item $Cortana1
+    }
+    Set-ItemProperty $Cortana1 AcceptedPrivacyPolicy -Value 1 
+    If (!(Test-Path $Cortana2)) {
+        New-Item $Cortana2
+    }
+    Set-ItemProperty $Cortana2 RestrictImplicitTextCollection -Value 0 
+    Set-ItemProperty $Cortana2 RestrictImplicitInkCollection -Value 0 
+    If (!(Test-Path $Cortana3)) {
+        New-Item $Cortana3
+    }
+    Set-ItemProperty $Cortana3 HarvestContacts -Value 1 
 }
         
 Function Stop-EdgePDF {
@@ -447,14 +464,25 @@ Function Revert-Changes {
 
     Write-Output "Re-enabling and starting WAP Push Service"
     #Enable and start WAP Push Service
-	Set-Service "dmwappushservice" -StartupType Automatic
+    Set-Service "dmwappushservice" -StartupType Automatic
     Start-Service "dmwappushservice"
     
     Write-Output "Re-enabling and starting the Diagnostics Tracking Service"
     #Enabling the Diagnostics Tracking Service
-	Set-Service "DiagTrack" -StartupType Automatic
-	Start-Service "DiagTrack"
+    Set-Service "DiagTrack" -StartupType Automatic
+    Start-Service "DiagTrack"
 }
+
+Function CheckDMWService {
+
+  Param([switch]$Debloat)
+  
+If (Get-Service -Name dmwappushservice | Where-Object {$_.StartType -eq "Disabled"}) {
+    Set-Service -Name dmwappushservice -StartupType Automatic}
+
+If(Get-Service -Name dmwappushservice | Where-Object {$_.Status -eq "Stopped"}) {
+   Start-Service -Name dmwappushservice} 
+  }
     
 Function Enable-EdgePDF {
     Write-Output "Setting Edge back to default"
@@ -506,30 +534,60 @@ Function FixWhitelistedApps {
 
 Function UninstallOneDrive {
 
+    Write-Output "Checking for pre-existing files and folders located in the OneDrive folders..."
+    Start-Sleep 1
+    If (Get-Item -Path "$env:USERPROFILE\OneDrive\*") {
+        Write-Output "Files found within the OneDrive folder! Checking to see if a folder named OneDriveBackupFiles exists."
+        Start-Sleep 1
+              
+        If (Get-Item "$env:USERPROFILE\Desktop\OneDriveBackupFiles" -ErrorAction SilentlyContinue) {
+            Write-Output "A folder named OneDriveBackupFiles already exists on your desktop. All files from your OneDrive location will be moved to that folder." 
+        }
+        else {
+            If (!(Get-Item "$env:USERPROFILE\Desktop\OneDriveBackupFiles" -ErrorAction SilentlyContinue)) {
+                Write-Output "A folder named OneDriveBackupFiles will be created and will be located on your desktop. All files from your OneDrive location will be located in that folder."
+                New-item -Path "$env:USERPROFILE\Desktop" -Name "OneDriveBackupFiles"-ItemType Directory -Force
+                Write-Output "Successfully created the folder 'OneDriveBackupFiles' on your desktop."
+            }
+        }
+        Start-Sleep 1
+        Move-Item -Path "$env:USERPROFILE\OneDrive\*" -Destination "$env:USERPROFILE\Desktop\OneDriveBackupFiles" -Force
+        Write-Output "Successfully moved all files/folders from your OneDrive folder to the folder 'OneDriveBackupFiles' on your desktop."
+        Start-Sleep 1
+        Write-Output "Proceeding with the removal of OneDrive."
+        Start-Sleep 1
+    }
+    Else {
+        If (!(Get-Item -Path "$env:USERPROFILE\OneDrive\*")) {
+            Write-Output "Either the OneDrive folder does not exist or there are no files to be found in the folder. Proceeding with removal of OneDrive."
+            Start-Sleep 1
+        }
+    }
+
     Write-Output "Uninstalling OneDrive"
     
     New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
     $onedrive = "$env:SYSTEMROOT\SysWOW64\OneDriveSetup.exe"
     $ExplorerReg1 = "HKCR:\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
     $ExplorerReg2 = "HKCR:\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}"
-	Stop-Process -Name "OneDrive*"
-	Start-Sleep 2
-	If (!(Test-Path $onedrive)) {
-		$onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
-	}
-	Start-Process $onedrive "/uninstall" -NoNewWindow -Wait
-	Start-Sleep 2
+    Stop-Process -Name "OneDrive*"
+    Start-Sleep 2
+    If (!(Test-Path $onedrive)) {
+        $onedrive = "$env:SYSTEMROOT\System32\OneDriveSetup.exe"
+    }
+    Start-Process $onedrive "/uninstall" -NoNewWindow -Wait
+    Start-Sleep 2
     Write-Output "Stopping explorer"
     Start-Sleep 1
-	.\taskkill.exe /F /IM explorer.exe
-	Start-Sleep 3
+    .\taskkill.exe /F /IM explorer.exe
+    Start-Sleep 3
     Write-Output "Removing leftover files"
-	Remove-Item "$env:USERPROFILE\OneDrive" -Force -Recurse
-	Remove-Item "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse
-	Remove-Item "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse
-	If (Test-Path "$env:SYSTEMDRIVE\OneDriveTemp") {
-		Remove-Item "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse
-	}
+    Remove-Item "$env:USERPROFILE\OneDrive" -Force -Recurse
+    Remove-Item "$env:LOCALAPPDATA\Microsoft\OneDrive" -Force -Recurse
+    Remove-Item "$env:PROGRAMDATA\Microsoft OneDrive" -Force -Recurse
+    If (Test-Path "$env:SYSTEMDRIVE\OneDriveTemp") {
+        Remove-Item "$env:SYSTEMDRIVE\OneDriveTemp" -Force -Recurse
+    }
     Write-Output "Removing OneDrive from windows explorer"
     If (!(Test-Path $ExplorerReg1)) {
         New-Item $ExplorerReg1
@@ -540,7 +598,18 @@ Function UninstallOneDrive {
     }
     Set-ItemProperty $ExplorerReg2 System.IsPinnedToNameSpaceTree -Value 0
     Write-Output "Restarting Explorer that was shut down before."
-    Start explorer.exe -NoNewWindow
+    Start-Process explorer.exe -NoNewWindow
+    
+    Write-Host "Enabling the Group Policy 'Prevent the usage of OneDrive for File Storage'."
+        $OneDriveKey = 'HKLM:Software\Policies\Microsoft\Windows\OneDrive'
+        If (!(Test-Path $OneDriveKey)) {
+            Mkdir $OneDriveKey 
+        }
+
+        $DisableAllOneDrive = 'HKLM:Software\Policies\Microsoft\Windows\OneDrive'
+        If (Test-Path $DisableAllOneDrive) {
+            New-ItemProperty $DisableAllOneDrive -Name OneDrive -Value DisableFileSyncNGSC -Verbose 
+        }
 }
 
 #GUI prompt Debloat/Revert options and GUI variables
@@ -554,77 +623,114 @@ $Ask = 'The following will allow you to either Debloat Windows 10 or to revert c
         Select "No" to Revert changes made by this script
         
         Select "Cancel" to stop the script.'
+
+$EverythingorSpecific = "Would you like to remove everything that was preinstalled on your Windows Machine? Select Yes to remove everything, or select No to remove apps via a blacklist."
 $EdgePdf = "Do you want to stop edge from taking over as the default PDF viewer?"
 $EdgePdf2 = "Do you want to revert changes that disabled Edge as the default PDF viewer?"
 $Reboot = "For some of the changes to properly take effect it is recommended to reboot your machine. Would you like to restart?"
 $OneDriveDelete = "Do you want to uninstall One Drive?"
 
-$Prompt1 = [Windows.MessageBox]::Show($Ask,"Debloat or Revert",$Button,$ErrorIco) 
+$Prompt1 = [Windows.MessageBox]::Show($Ask, "Debloat or Revert", $Button, $ErrorIco) 
 Switch ($Prompt1) {
     #This will debloat Windows 10
     Yes {
-        #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
-        Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
-        New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-        Start-Sleep 1
-        Write-Output "Uninstalling bloatware, please wait. The first step is to identify and remove them via a blacklist, and then to use the whitelist approach."
-        Start-Debloat
-        Write-Output "Bloatware removed."
-        Start-Sleep 1
-        Write-Output "Removing specific registry keys."
-        Remove-Keys
-        Write-Output "Leftover bloatware registry keys removed."
-        Start-Sleep 1
-        Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
-        Start-Sleep 1
-        FixWhitelistedApps
-        Start-Sleep 1
-        Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
-        Protect-Privacy
-        Start-Sleep 1
-        DisableCortana
-        Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
-        Start-Sleep 1
-        Write-Output "Stopping and disabling Diagnostics Tracking Service"
-        DisableDiagTrack
-        Write-Output "Diagnostics Tracking Service disabled"
-        Start-Sleep 1
-        Write-Output "Disabling WAP push service"
-        Start-Sleep 1
-        DisableWAPPush
-        Write-Output "WAP push service stopped and disabled"
-        Start-Sleep 1;  = $Debloat
 
-        $Prompt2 = [Windows.MessageBox]::Show($EdgePdf,"Edge PDF",$Button,$Warn)
-        Switch ($Prompt2) {
-            Yes {
-                Stop-EdgePDF
-                Write-Output "Edge will no longer take over as the default PDF viewer."; = $Yes
+        $Prompt2 = [Windows.MessageBox]::Show($EverythingorSpecific, "Everything or Specific", $Button, $Warn)
+        switch ($Prompt2) {
+            Yes { 
+                #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
+                Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
+                New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+                Start-Sleep 1
+                Write-Output "Uninstalling bloatware, please wait."
+                DebloatAll
+                Write-Output "Bloatware removed."
+                Start-Sleep 1
+                Write-Output "Removing specific registry keys."
+                Remove-Keys
+                Write-Output "Leftover bloatware registry keys removed."
+                Start-Sleep 1
+                Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
+                Start-Sleep 1
+                FixWhitelistedApps
+                Start-Sleep 1
+                Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
+                Protect-Privacy
+                Start-Sleep 1
+                DisableCortana
+                Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
+                Start-Sleep 1
+                Write-Output "Stopping and disabling Diagnostics Tracking Service"
+                DisableDiagTrack
+                Write-Output "Diagnostics Tracking Service disabled"
+                Start-Sleep 1
+                Write-Output "Disabling WAP push service"
+                Start-Sleep 1
+                DisableWAPPush
+                Write-Output "Re-enabling DMWAppushservice if it was disabled"
+                CheckDMWService
+                Start-Sleep 1
             }
             No {
-                 = $No
+                #Creates a "drive" to access the HKCR (HKEY_CLASSES_ROOT)
+                Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the removal and modification of specific registry keys."
+                New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
+                Start-Sleep 1
+                Write-Output "Uninstalling bloatware, please wait."
+                DebloatBlacklist
+                Write-Output "Bloatware removed."
+                Start-Sleep 1
+                Write-Output "Removing specific registry keys."
+                Remove-Keys
+                Write-Output "Leftover bloatware registry keys removed."
+                Start-Sleep 1
+                Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
+                Start-Sleep 1
+                FixWhitelistedApps
+                Start-Sleep 1
+                Write-Output "Disabling Cortana from search, disabling feedback to Microsoft, and disabling scheduled tasks that are considered to be telemetry or unnecessary."
+                Protect-Privacy
+                Start-Sleep 1
+                DisableCortana
+                Write-Output "Cortana disabled and removed from search, feedback to Microsoft has been disabled, and scheduled tasks are disabled."
+                Start-Sleep 1
+                Write-Output "Stopping and disabling Diagnostics Tracking Service"
+                DisableDiagTrack
+                Write-Output "Diagnostics Tracking Service disabled"
+                Start-Sleep 1
+                Write-Output "Disabling WAP push service"
+                Start-Sleep 1
+                DisableWAPPush
+                Write-Output "Re-enabling DMWAppushservice if it was disabled"
+                CheckDMWService
+                Start-Sleep 1
             }
-            Cancel {
-            Exit-PSSession
+        }
+
+        $Prompt3 = [Windows.MessageBox]::Show($EdgePdf, "Edge PDF", $Button, $Warn)
+        Switch ($Prompt3) {
+            Yes {
+                Stop-EdgePDF
+                Write-Output "Edge will no longer take over as the default PDF viewer."
+            }
+            No {
+                Write-Output "You chose not to stop Edge from taking over as the default PDF viewer."
             }
         }
         #Prompt asking to delete OneDrive
-        $Prompt3 = [Windows.MessageBox]::Show($OneDriveDelete,"Delete OneDrive",$Button,$ErrorIco) 
-        Switch ($Prompt3) {
+        $Prompt4 = [Windows.MessageBox]::Show($OneDriveDelete, "Delete OneDrive", $Button, $ErrorIco) 
+        Switch ($Prompt4) {
             Yes {
                 UninstallOneDrive
-                Write-Output "OneDrive is now removed from the computer."; = $Yes
+                Write-Output "OneDrive is now removed from the computer."
             }
             No {
-                 = $No
-            }
-            Cancel {
-            Exit-PSSession
+                Write-Output "You have chosen to skip removing OneDrive from your machine."
             }
         }
         #Prompt asking if you'd like to reboot your machine
-        $Prompt4 = [Windows.MessageBox]::Show($Reboot,"Reboot",$Button,$Warn) 
-        Switch ($Prompt4) {
+        $Prompt5 = [Windows.MessageBox]::Show($Reboot, "Reboot", $Button, $Warn) 
+        Switch ($Prompt5) {
             Yes {
                 Write-Output "Unloading the HKCR drive..."
                 Remove-PSDrive HKCR 
@@ -632,7 +738,7 @@ Switch ($Prompt1) {
                 Stop-Transcript
                 Write-Output "Initiating reboot."
                 Start-Sleep 2
-                Restart-Computer; = $Yes
+                Restart-Computer
             }
             No {
                 Write-Output "Unloading the HKCR drive..."
@@ -641,10 +747,7 @@ Switch ($Prompt1) {
                 Stop-Transcript
                 Write-Output "Script has finished. Exiting."
                 Start-Sleep 2
-                Exit; = $No
-            }
-            Cancel {
-            Exit-PSSession
+                Exit
             }
         }
     }
@@ -652,23 +755,21 @@ Switch ($Prompt1) {
         Write-Output "Reverting changes..."
         Write-Output "Creating PSDrive 'HKCR' (HKEY_CLASSES_ROOT). This will be used for the duration of the script as it is necessary for the modification of specific registry keys."
         New-PSDrive  HKCR -PSProvider Registry -Root HKEY_CLASSES_ROOT
-        Revert-Changes; = $Revert
+        Revert-Changes
         #Prompt asking to revert edge changes as well
-        $Prompt5 = [Windows.MessageBox]::Show($EdgePdf2,"Revert Edge",$Button,$ErrorIco)
-        Switch ($Prompt5) {
+        $Prompt6 = [Windows.MessageBox]::Show($EdgePdf2, "Revert Edge", $Button, $ErrorIco)
+        Switch ($Prompt6) {
             Yes {
                 Enable-EdgePDF
-                Write-Output "Edge will no longer be disabled from being used as the default Edge PDF viewer."; = $Yes
+                Write-Output "Edge will no longer be disabled from being used as the default Edge PDF viewer."
             }
-            No { = $No
-            }
-            Cancel {
-            Exit-PSSession
+            No {
+               Write-Output "You have chosen to keep the setting that disallows Edge to be the default PDF viewer."
             }
         }
         #Prompt asking if you'd like to reboot your machine
-        $Prompt6 = [Windows.MessageBox]::Show($Reboot,"Reboot",$Button,$Warn)
-        Switch ($Prompt6) {
+        $Prompt7 = [Windows.MessageBox]::Show($Reboot, "Reboot", $Button, $Warn)
+        Switch ($Prompt7) {
             Yes {
                 Write-Output "Unloading the HKCR drive..."
                 Remove-PSDrive HKCR 
@@ -676,7 +777,7 @@ Switch ($Prompt1) {
                 Write-Output "Initiating reboot."
                 Stop-Transcript
                 Start-Sleep 2
-                Restart-Computer; = $Yes
+                Restart-Computer
             }
             No {
                 Write-Output "Unloading the HKCR drive..."
@@ -685,14 +786,8 @@ Switch ($Prompt1) {
                 Write-Output "Script has finished. Exiting."
                 Stop-Transcript
                 Start-Sleep 2
-                Exit; = $No
-            }
-            Cancel {
-            Exit-PSSession
+                Exit
             }
         }
-    }
-    Cancel {
-    Exit-PSSession
     }
 }

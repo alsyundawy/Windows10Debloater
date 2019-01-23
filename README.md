@@ -1,5 +1,5 @@
 # Windows10Debloater
-Script/Utility to debloat Windows 10
+Script/Utility/Application to debloat Windows 10
 
 # Purpose
 
@@ -29,7 +29,7 @@ You can choose to either 'Debloat' or 'Revert'. Depending on your choice, either
 
 The Debloat switch choice runs the following functions:
 
-Start-Debloat,
+Debloat,
 Remove-Keys,
 Protect-Privacy,
 Stop-EdgePDF (If chosen)
@@ -120,11 +120,17 @@ Xbox Game CallableUI,
 Xbox Identity Provider, and
 ContactSupport.
 
-# Silent and Interactive
+# Silent, Interactive, and GUI Application
 
-There are now 2 versions of my Windows10Debloater - There is an interactive version, and a pure silent version. The silent version now utilizes the switch parameters: -Sysprep, -Debloat, and -StopEdgePDF. The silent version can be useful for deploying MDT Images/sysprepping or any other way you deploy Windows 10. This will work to remove the bloatware during the deployment process.
+There are now 2 versions of my Windows10Debloater - There is an interactive version, and a pure silent version. The silent version now utilizes the switch parameters: -Sysprep, -Debloat -Privacy and -StopEdgePDF. The silent version can be useful for deploying MDT Images/sysprepping or any other way you deploy Windows 10. This will work to remove the bloatware during the deployment process.
 
 The interactive version is what it implies - a Windows10Debloater script with interactive prompts. This one should not be used for deployments that require a silent script with optional parameters.
+
+There is now a GUI Application named Windows10DebloaterGUI.ps1 with buttons to perform all of the functions that the scripts do. This is better for the average user who does not want to work with code. You need to download the file, and then just right click it and hit "Run as Powershell" and the application will load up! 
+
+The Remove all bloatware option - This uses both of the following functions - DebloatBlacklist and DebloatAll. The DebloatAll function which uses a whitelist will remove any appxpackages/appxprovisionedpackages that aren't whitelisted. The DebloatBlacklist function should theoretically remove anything possibly missed by the DebloatAll function. I also implemented this per a feature request.
+
+The Remove All Bloatware without Blacklist option - This only uses the DebloatAll function.
 
 # Switch Parameters
 
@@ -134,8 +140,6 @@ The first one is -SysPrep, which runs the command within a function: get-appxpac
 
 The second switch parameter is -Debloat, which does as it suggests. It runs the following functions: Start-Debloat, Remove-Keys, and Protect-Privacy.
 
-Start-Debloat removes all bloatware apps (that are listed above) without removing Store, Photos, Paint3d, and Calculator.
-
 Remove-Keys removes registry keys leftover that are associated with the bloatware apps listed above, but not removed during the Start-Debloat function.
 
 Third, Protect-Privacy adds and/or changes registry keys to stop some telemetry functions, stops Cortana from being used as your Search Index, disables "unneccessary" scheduled tasks, and more.
@@ -144,7 +148,7 @@ Finally, there is an optional switch parameter which is Stop-EdgePDF. This just 
 
 # Credit
 
-Thank you to a60wattfish, abulgatz and Reddit user /u/GavinEke for some of the suggestions/fixes that I have placed into my scripts. 
+Thank you to a60wattfish, abulgatz, xsisbest, Damian and Reddit user /u/GavinEke for some of the suggestions and fixes that I have placed into my scripts. You all have done a fantastic job!
 
 # Donate 
 
