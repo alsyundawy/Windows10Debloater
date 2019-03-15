@@ -37,8 +37,8 @@ Function DebloatAll {
     #Removes AppxPackages
     #Credit to /u/GavinEke for a modified version of my whitelist code
     [regex]$WhitelistedApps = 'Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|`
-    Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|`
-    Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry'
+    Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|Framework|`
+    Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry|Slack'
     Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
     Get-AppxPackage | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
     Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -NotMatch $WhitelistedApps} | Remove-AppxProvisionedPackage -Online
@@ -103,6 +103,8 @@ Function DebloatBlacklist {
         "*Royal Revolt*"
         "*Sway*"
         "*Speed Test*"
+        "*Dolby*"
+        "*Windows.CBSPreview*"
              
         #Optional: Typically not removed but you can if you need to for some reason
         #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
@@ -116,7 +118,7 @@ Function DebloatBlacklist {
     )
     foreach ($Bloat in $Bloatware) {
         Get-AppxPackage -Name $Bloat| Remove-AppxPackage -ErrorAction SilentlyContinue
-        Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Debloat | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
+        Get-AppxProvisionedPackage -Online | Where-Object DisplayName -like $Bloat | Remove-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue
         Write-Output "Trying to remove $Bloat."
     }
 }
@@ -627,6 +629,18 @@ Function UninstallOneDrive {
         }
 }
 
+Function UnpinStart {
+#https://superuser.com/questions/1068382/how-to-remove-all-the-tiles-in-the-windows-10-start-menu
+#Unpins all tiles from the Start Menu
+    Write-Output "Unpinning all tiles from the start menu"
+    (New-Object -Com Shell.Application).
+    NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+    Items() |
+    %{ $_.Verbs() } |
+    ?{$_.Name -match 'Un.*pin from Start'} |
+    %{$_.DoIt()}
+}
+
 #GUI prompt Debloat/Revert options and GUI variables
 $Button = [Windows.MessageBoxButton]::YesNoCancel
 $ErrorIco = [Windows.MessageBoxImage]::Error
@@ -644,7 +658,8 @@ $EdgePdf = "Do you want to stop edge from taking over as the default PDF viewer?
 $EdgePdf2 = "Do you want to revert changes that disabled Edge as the default PDF viewer?"
 $Reboot = "For some of the changes to properly take effect it is recommended to reboot your machine. Would you like to restart?"
 $OneDriveDelete = "Do you want to uninstall One Drive?"
-
+$Unpin = "Do you want to unpin all items from the Start menu?"
+$InstallNET = "Do you want to install .NET 3.5?"
 $Prompt1 = [Windows.MessageBox]::Show($Ask, "Debloat or Revert", $Button, $ErrorIco) 
 Switch ($Prompt1) {
     #This will debloat Windows 10
@@ -743,9 +758,33 @@ Switch ($Prompt1) {
                 Write-Output "You have chosen to skip removing OneDrive from your machine."
             }
         }
-        #Prompt asking if you'd like to reboot your machine
-        $Prompt5 = [Windows.MessageBox]::Show($Reboot, "Reboot", $Button, $Warn) 
+				#Prompt asking if you'd like to unpin all start items
+		$Prompt5 = [Windows.MessageBox]::Show($Unpin, "Unpin", $Button, $ErrorIco) 
         Switch ($Prompt5) {
+            Yes {
+                UnpinStart
+				Write-Output "Start Apps unpined."
+            }
+            No {
+				Write-Output "You have chosen to skip removing OneDrive from your machine."
+
+            }
+        }
+        $Prompt6 = [Windows.MessageBox]::Show($InstallNET, "Install .Net", $Button, $Warn)
+        Switch ($Prompt6) {
+            Yes {
+                Write-Output "Initializing the installation of .NET 3.5..."
+                Try {
+                DISM /Online /Enable-Feature /FeatureName:NetFx3 /All
+                Write-Output ".NET 3.5 has been successfully installed!" }
+                Catch {
+                    $_
+                }
+            }
+        }
+        #Prompt asking if you'd like to reboot your machine
+        $Prompt7 = [Windows.MessageBox]::Show($Reboot, "Reboot", $Button, $Warn) 
+        Switch ($Prompt7) {
             Yes {
                 Write-Output "Unloading the HKCR drive..."
                 Remove-PSDrive HKCR 

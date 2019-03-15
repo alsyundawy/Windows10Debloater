@@ -59,7 +59,7 @@ $RevertChange.location = New-Object System.Drawing.Point(254, 32)
 $RevertChange.Font = 'Microsoft Sans Serif,10'
 
 $Label2 = New-Object system.Windows.Forms.Label
-$Label2.text = "Optional Privacy Changes/Fixes"
+$Label2.text = "Optional Changes/Fixes"
 $Label2.AutoSize = $true
 $Label2.width = 25
 $Label2.height = 10
@@ -82,15 +82,15 @@ $EnableCortana.Font = 'Microsoft Sans Serif,10'
 
 $StopEdgePDFTakeover = New-Object system.Windows.Forms.Button
 $StopEdgePDFTakeover.text = "Stop Edge PDF Takeover"
-$StopEdgePDFTakeover.width = 161
-$StopEdgePDFTakeover.height = 38
+$StopEdgePDFTakeover.width = 175
+$StopEdgePDFTakeover.height = 35
 $StopEdgePDFTakeover.location = New-Object System.Drawing.Point(130, 217)
 $StopEdgePDFTakeover.Font = 'Microsoft Sans Serif,10'
 
 $EnableEdgePDFTakeover = New-Object system.Windows.Forms.Button
 $EnableEdgePDFTakeover.text = "Enable Edge PDF Takeover"
-$EnableEdgePDFTakeover.width = 177
-$EnableEdgePDFTakeover.height = 39
+$EnableEdgePDFTakeover.width = 185
+$EnableEdgePDFTakeover.height = 35
 $EnableEdgePDFTakeover.location = New-Object System.Drawing.Point(130, 260)
 $EnableEdgePDFTakeover.Font = 'Microsoft Sans Serif,10'
 
@@ -98,21 +98,28 @@ $DisableTelemetry = New-Object system.Windows.Forms.Button
 $DisableTelemetry.text = "Disable Telemetry/Tasks"
 $DisableTelemetry.width = 152
 $DisableTelemetry.height = 35
-$DisableTelemetry.location = New-Object System.Drawing.Point(9, 303)
+$DisableTelemetry.location = New-Object System.Drawing.Point(9, 345)
 $DisableTelemetry.Font = 'Microsoft Sans Serif,10'
 
 $RemoveRegkeys = New-Object system.Windows.Forms.Button
 $RemoveRegkeys.text = "Remove Bloatware Regkeys"
-$RemoveRegkeys.width = 177
-$RemoveRegkeys.height = 40
-$RemoveRegkeys.location = New-Object System.Drawing.Point(169, 303)
+$RemoveRegkeys.width = 188
+$RemoveRegkeys.height = 35
+$RemoveRegkeys.location = New-Object System.Drawing.Point(169, 345)
 $RemoveRegkeys.Font = 'Microsoft Sans Serif,10'
+
+$UnpinStartMenuTiles = New-Object system.Windows.Forms.Button
+$UnpinStartMenuTiles.text = "Unpin Tiles From Start Menu"
+$UnpinStartMenuTiles.width = 190
+$UnpinStartMenuTiles.height = 35
+$UnpinStartMenuTiles.location = New-Object System.Drawing.Point(169, 303)
+$UnpinStartMenuTiles.Font = 'Microsoft Sans Serif,10'
 
 $RemoveOnedrive = New-Object system.Windows.Forms.Button
 $RemoveOnedrive.text = "Uninstall OneDrive"
-$RemoveOnedrive.width = 117
+$RemoveOnedrive.width = 152
 $RemoveOnedrive.height = 35
-$RemoveOnedrive.location = New-Object System.Drawing.Point(9, 345)
+$RemoveOnedrive.location = New-Object System.Drawing.Point(9, 303)
 $RemoveOnedrive.Font = 'Microsoft Sans Serif,10'
 
 $FixWhitelist = New-Object system.Windows.Forms.Button
@@ -129,7 +136,15 @@ $RemoveBloatNoBlacklist.height = 39
 $RemoveBloatNoBlacklist.location = New-Object System.Drawing.Point(9, 123)
 $RemoveBloatNoBlacklist.Font = 'Microsoft Sans Serif,10'
 
-$Form.controls.AddRange(@($Debloat, $RemoveAllBloatware, $RemoveBlacklist, $Label1, $RevertChange, $Label2, $DisableCortana, $EnableCortana, $StopEdgePDFTakeover, $EnableEdgePDFTakeover, $DisableTelemetry, $RemoveRegkeys, $RemoveOnedrive, $FixWhitelist, $RemoveBloatNoBlacklist))
+$InstallNet35 = New-Object system.Windows.Forms.Button
+$InstallNet35.text = "Install .NET v3.5"
+$InstallNet35.width = 152
+$InstallNet35.height = 39
+$InstallNet35.location = New-Object System.Drawing.Point(9, 387)
+$InstallNet35.Font = 'Microsoft Sans Serif,10'
+
+
+$Form.controls.AddRange(@($Debloat, $RemoveAllBloatware, $RemoveBlacklist, $Label1, $RevertChange, $Label2, $DisableCortana, $EnableCortana, $StopEdgePDFTakeover, $EnableEdgePDFTakeover, $DisableTelemetry, $RemoveRegkeys, $UnpinStartMenuTiles, $RemoveOnedrive, $FixWhitelist, $RemoveBloatNoBlacklist, $InstallNet35))
 
 $DebloatFolder = "C:\Temp\Windows10Debloater"
 If (Test-Path $DebloatFolder) {
@@ -205,7 +220,9 @@ $RemoveBlacklist.Add_Click( {
                 "*Minecraft*"
                 "*Royal Revolt*"
                 "*Sway*"
-                 
+                "*Dolby*"
+                "*Windows.CBSPreview*"
+                
                 #Optional: Typically not removed but you can if you need to for some reason
                 #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
                 #"*Microsoft.Advertising.Xaml_10.1712.5.0_x86__8wekyb3d8bbwe*"
@@ -278,8 +295,8 @@ $RemoveAllBloatware.Add_Click( {
             #Removes AppxPackages
             #Credit to /u/GavinEke for a modified version of my whitelist code
             [regex]$WhitelistedApps = 'Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|`
-            Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|`
-            Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry'
+            Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|Framework|`
+            Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry|Slack'
             Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
             Get-AppxPackage | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage
             Get-AppxProvisionedPackage -Online | Where-Object {$_.PackageName -NotMatch $WhitelistedApps} | Remove-AppxProvisionedPackage -Online
@@ -326,6 +343,7 @@ $RemoveAllBloatware.Add_Click( {
                 "Microsoft.XboxSpeechToTextOverlay"
                 "Microsoft.ZuneMusic"
                 "Microsoft.ZuneVideo"
+                "*Windows.CBSPreview*"
 
                 #Sponsored Windows 10 AppX Apps
                 #Add sponsored/featured apps to remove in the "*AppName*" format
@@ -343,6 +361,7 @@ $RemoveAllBloatware.Add_Click( {
                 "*Minecraft*"
                 "*Royal Revolt*"
                 "*Sway*"
+                "*Dolby*"
              
                 #Optional: Typically not removed but you can if you need to for some reason
                 #"*Microsoft.Advertising.Xaml_10.1712.5.0_x64__8wekyb3d8bbwe*"
@@ -506,6 +525,19 @@ $RemoveAllBloatware.Add_Click( {
             Get-ScheduledTask -TaskName DmClient | Disable-ScheduledTask -ErrorAction SilentlyContinue
             Get-ScheduledTask -TaskName DmClientOnScenarioDownload | Disable-ScheduledTask -ErrorAction SilentlyContinue
         }
+
+            Function UnpinStart {
+            #Credit to Vikingat-Rage
+            #https://superuser.com/questions/1068382/how-to-remove-all-the-tiles-in-the-windows-10-start-menu
+            #Unpins all tiles from the Start Menu
+            Write-Host "Unpinning all tiles from the start menu"
+            (New-Object -Com Shell.Application).
+            NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+            Items() |
+            %{ $_.Verbs() } |
+            ?{$_.Name -match 'Un.*pin from Start'} |
+            %{$_.DoIt()}
+    }
   
         #This includes fixes by xsisbest
         Function FixWhitelistedApps {
@@ -556,6 +588,8 @@ $RemoveAllBloatware.Add_Click( {
         FixWhitelistedApps
         Write-Host "Stopping telemetry, disabling unneccessary scheduled tasks, and preventing bloatware from returning."
         Protect-Privacy
+        UnpinStart
+        Write-Host "Unpinning tiles from the Start Menu."
         #Write-Host "Stopping Edge from taking over as the default PDF Viewer."
         #Stop-EdgePDF
         Write-Output "Setting the 'InstallService' Windows service back to 'Started' and the Startup Type 'Automatic'."
@@ -608,8 +642,8 @@ $RemoveBloatNoBlacklist.Add_Click( {
             #Removes AppxPackages
             #Credit to Reddit user /u/GavinEke for a modified version of my whitelist code
             [regex]$WhitelistedApps = 'Microsoft.ScreenSketch|Microsoft.Paint3D|Microsoft.WindowsCalculator|Microsoft.WindowsStore|Microsoft.Windows.Photos|CanonicalGroupLimited.UbuntuonWindows|`
-            Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|`
-            Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry'
+            Microsoft.XboxGameCallableUI|Microsoft.XboxGamingOverlay|Microsoft.Xbox.TCUI|Microsoft.XboxGamingOverlay|Microsoft.XboxIdentityProvider|Microsoft.MicrosoftStickyNotes|Microsoft.MSPaint|Microsoft.WindowsCamera|.NET|Framework|`
+            Microsoft.HEIFImageExtension|Microsoft.ScreenSketch|Microsoft.StorePurchaseApp|Microsoft.VP9VideoExtensions|Microsoft.WebMediaExtensions|Microsoft.WebpImageExtension|Microsoft.DesktopAppInstaller|WindSynthBerry|MIDIBerry|Slack'
             Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage -ErrorAction SilentlyContinue
             # Run this again to avoid error on 1803 or having to reboot.
             Get-AppxPackage -AllUsers | Where-Object {$_.Name -NotMatch $WhitelistedApps} | Remove-AppxPackage -ErrorAction SilentlyContinue
@@ -764,6 +798,19 @@ $RemoveBloatNoBlacklist.Add_Click( {
             Get-ScheduledTask -TaskName DmClient | Disable-ScheduledTask -ErrorAction SilentlyContinue
             Get-ScheduledTask -TaskName DmClientOnScenarioDownload | Disable-ScheduledTask -ErrorAction SilentlyContinue
         }
+
+            Function UnpinStart {
+            #Credit to Vikingat-Rage
+            #https://superuser.com/questions/1068382/how-to-remove-all-the-tiles-in-the-windows-10-start-menu
+            #Unpins all tiles from the Start Menu
+            Write-Host "Unpinning all tiles from the start menu"
+            (New-Object -Com Shell.Application).
+            NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+            Items() |
+            %{ $_.Verbs() } |
+            ?{$_.Name -match 'Un.*pin from Start'} |
+            %{$_.DoIt()}
+    }
   
         #This includes fixes by xsisbest
         Function FixWhitelistedApps {
@@ -813,6 +860,8 @@ $RemoveBloatNoBlacklist.Add_Click( {
         FixWhitelistedApps
         Write-Host "Stopping telemetry, disabling unneccessary scheduled tasks, and preventing bloatware from returning."
         Protect-Privacy
+        UnpinStart
+        Write-Host "Unpinning tiles from the Start Menu."
         #Write-Host "Stopping Edge from taking over as the default PDF Viewer."
         Write-Host "Checking to make sure that the service 'dmwappushservice' has been started."
         CheckDMWService
@@ -1225,6 +1274,18 @@ $RemoveRegkeys.Add_Click( {
         }
         Write-Host "Additional bloatware keys have been removed! `n"
     })
+$UnpinStartMenuTiles.Add_Click( {
+        #https://superuser.com/questions/1068382/how-to-remove-all-the-tiles-in-the-windows-10-start-menu
+        #Unpins all tiles from the Start Menu
+            Write-Host "Unpinning all tiles from the start menu"
+            (New-Object -Com Shell.Application).
+            NameSpace('shell:::{4234d49b-0245-4df3-b780-3893943456e1}').
+            Items() |
+            %{ $_.Verbs() } |
+            ?{$_.Name -match 'Un.*pin from Start'} |
+            %{$_.DoIt()}
+    })
+
 $RemoveOnedrive.Add_Click( { 
         Write-Output "Checking for pre-existing files and folders located in the OneDrive folders..."
         Start-Sleep 1
@@ -1282,7 +1343,7 @@ $RemoveOnedrive.Add_Click( {
         Start-Sleep 2
         Write-Host "Stopping explorer"
         Start-Sleep 1
-        .\taskkill.exe /F /IM explorer.exe
+        taskkill.exe /F /IM explorer.exe
         Start-Sleep 3
         Write-Host "Removing leftover files"
         Remove-Item "$env:USERPROFILE\OneDrive" -Force -Recurse
@@ -1315,6 +1376,21 @@ $RemoveOnedrive.Add_Click( {
             New-ItemProperty $DisableAllOneDrive -Name OneDrive -Value DisableFileSyncNGSC -Verbose 
         }
     })
+
+$InstallNet35.Add_Click( {
+
+        Write-Host "Initializing the installation of .NET 3.5..."
+        Try {
+            Write-Host "Installing now. Please wait..."
+            DISM /Online /Enable-Feature /FeatureName:NetFx3 /All
+            Write-Host ".NET 3.5 has been successfully installed!" 
+        }
+        Catch {
+            $_
+        }
+    } )
+
+
 #endregion events }
 
 #endregion GUI }
